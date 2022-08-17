@@ -133,7 +133,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - install awscli
+      - install_awscli
       - run:
           name: ensure back-end infrastructure exists
           command: |

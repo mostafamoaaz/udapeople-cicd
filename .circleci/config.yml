@@ -14,6 +14,7 @@ commands:
     description: install ansible
     steps:
       - run:
+          command: |
             sudo apt update
             sudo apt install software-properties-common -y
             sudo add-apt-repository --yes --update ppa:ansible/ansible
@@ -24,6 +25,7 @@ commands:
     description: install aws cli
     steps:
       - run:
+          command: |
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install

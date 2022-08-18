@@ -1,6 +1,34 @@
 version: 2.1
 
 commands:
+  install_nodejs:
+    description: install node.js 13
+    steps:
+      - run:
+          name: install node.js 13
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+            sudo apt install -y nodejs
+
+  install_ansible:
+    description: install ansible
+    steps:
+      - run:
+            sudo apt update
+            sudo apt install software-properties-common -y
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible -y
+
+
+  install_awscli:
+    description: install aws cli
+    steps:
+      - run:
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY --profile udapeople-admin
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile udapeople-admin
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -139,14 +167,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY --profile udapeople-admin
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile udapeople-admin
+      - install_awscli
       - run:
           name: ensure back-end infrastructure exists
           command: |
@@ -188,17 +209,11 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - install_ansible
       - add_ssh_keys:
             fingerprints: ["4a:2b:31:94:c1:7a:aa:80:ea:0e:82:4c:59:c0:0b:4d"]
       - attach_workspace:
             at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt update
-            sudo apt install software-properties-common
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible
       - run:
           name: Configure server
           command: |
@@ -212,14 +227,7 @@ jobs:
       - image: cimg/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY --profile udapeople-admin
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile udapeople-admin
+      - install_awscli
       - run:
           name: run migrations
           command: |
@@ -236,43 +244,80 @@ jobs:
       - destroy-environment
       - revert-migrations
 
-#  deploy-frontend:
-#    docker:
-#      # Docker image here that supports AWS CLI
-#    steps:
-#      # Checkout code from git
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            # your code here
-#      - run:
-#          name: Get backend url
-#          command: |
-#            # your code here
-#            export API_URL="http://${BACKEND_IP}:3030"
-#            echo "${API_URL}"
-#      - run:
-#          name: Deploy frontend objects
-#          command: |
-#            # your code here
-#      # Here's where you will add some code to rollback on failure      
+  deploy-frontend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_awscli
+      - install_nodejs
+      - restore_cache:
+          keys: [frontend-depns]
+      - run:
+          name: Install dependencies 
+          command: |
+            cd frontend
+            npm install
+      - run:
+          name: Get backend url
+          command: |
+            BACKEND_IP=$(aws ec2 describe-instances --profile udapeople-admin \
+                --filter "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --query "Reservations[*].Instances[*].PublicIpAddress" \
+                --output text)
+            echo "API_URL=http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm run build
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - destroy-environment
+      - revert-migrations     
                     
-#  deploy-backend:
-#    docker:
-#      # Docker image here that supports Ansible
-#    steps:
-#      # Checkout code from git
-#      # Add ssh keys with fingerprint
-#      # attach workspace
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            # your code here
-#      - run:
-#          name: Deploy backend
-#          command: |
-#            # your code here
-#      # Here's where you will add some code to rollback on failure  
+  deploy-backend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_awscli
+      - install_ansible
+      - install_nodejs
+      - add_ssh_keys:
+            fingerprints: ["4a:2b:31:94:c1:7a:aa:80:ea:0e:82:4c:59:c0:0b:4d"]
+      - attach_workspace:
+            at: ~/
+      - restore_cache:
+          keys: [backend-depns]
+      - run:
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install
+      - run:
+          name: package backend
+          command: |
+            cd backend
+            npm run build
+            tar -czf art
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment
+      - revert-migrations   
 
 #  smoke-test:
 #    docker:
@@ -354,10 +399,10 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      #- deploy-frontend:
-      #    requires: [run-migrations]
-      #- deploy-backend:
-      #    requires: [run-migrations]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
       #- smoke-test:
       #    requires: [deploy-backend, deploy-frontend]
       #- cloudfront-update:

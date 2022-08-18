@@ -12,7 +12,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend--<< parameter.Workflow_ID
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameter.Workflow_ID >>
+            aws s3 rm s3://udapeople--<<parameter.Workflow_ID>> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameter.Workflow_ID>>
             
 
 #  revert-migrations:
@@ -138,11 +140,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: ensure back-end infrastructure exists
+          name: Install dependencies
           command: |
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
+            aws configure set varname value --profile udapeople-admin
+            aws configure set aws_access_key_id default_access_key
+            aws configure set aws_secret_access_key default_secret_key
+      - run:
+          name: ensure back-end infrastructure exists
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags "project= udapeople" \
@@ -157,7 +164,8 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags "project= udapeople" \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides id="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides id="${CIRCLE_WORKFLOW_ID:0:7}"   \
+              --profile udapeople-admin 
               
       - run:
           name: add back-end ip to ansible inventory
@@ -173,26 +181,31 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # here's where you will add some code to rollback on failure      
+      - destroy-environment    
 
-#  configure-infrastructure:
-#    docker:
-#      # Docker image here that supports Ansible
-#    steps:
-#      # Checkout code from git
-#      # Add ssh keys with fingerprint
-#      # attach workspace
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            # Your code here
-#            exit 1
-#      - run:
-#          name: Configure server
-#          command: |
-#            # Your code here
-#            exit 1
-#      # Here's where you will add some code to rollback on failure      
+  configure-infrastructure:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - add_ssh_keys:
+            fingerprints: ["4a:2b:31:94:c1:7a:aa:80:ea:0e:82:4c:59:c0:0b:4d"]
+      - attach_workspace:
+            at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment      
 
 #  run-migrations:
 #    docker:
@@ -325,8 +338,8 @@ workflows:
           filters:
             branches:
               only: [main]
-      #- configure-infrastructure:
-      #    requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
       #- run-migrations:
       #    requires: [configure-infrastructure]
       #- deploy-frontend:

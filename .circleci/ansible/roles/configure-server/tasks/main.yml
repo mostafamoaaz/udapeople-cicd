@@ -2,7 +2,7 @@
 - name: "install node.js from node scource"
   become: true
   shell: |
-  curl -sl https://deb.nodesource.com/setup_13.x | sudo -E bash -
+	curl -sl https://deb.nodesource.com/setup_13.x | sudo -E bash -
 
 - name: "install node.js 13 using apt"
   become: true
@@ -11,7 +11,7 @@
 	state: latest
 	update_cache: yes
 
--name: "install pm2 globally"
- npm:
+- name: "install pm2 globally"
+  npm:
 	name: pm2
 	global: yes

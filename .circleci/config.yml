@@ -12,9 +12,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameter.Workflow_ID >>
-            aws s3 rm s3://udapeople--<<parameter.Workflow_ID>> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameter.Workflow_ID>>
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameter.Workflow_ID >> --profile udapeople-admin
+            aws s3 rm s3://udapeople--<<parameter.Workflow_ID>> --recursive --profile udapeople-admin
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameter.Workflow_ID>> --profile udapeople-admin
             
 
 #  revert-migrations:
@@ -171,17 +171,17 @@ jobs:
           name: add back-end ip to ansible inventory
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
-            --filter "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --query "Reservations[*].Instances[*].PublicIpAddress" \
-            output text)
-            echo BACKEND_IP >> .circleci/ansible/inventory.txt
+                --filter "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --query "Reservations[*].Instances[*].PublicIpAddress" \
+                --output text)
+            echo $BACKEND_IP >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
             
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      #- destroy-environment
+      - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -205,7 +205,7 @@ jobs:
             cd .circleci/ansible
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
-      #- destroy-environment
+      - destroy-environment
 
 #  run-migrations:
 #    docker:

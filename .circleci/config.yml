@@ -143,15 +143,12 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-            aws configure \
-            AWS_ACCESS_KEY	\
-            AWS_SECRET_ACCESS_KEY
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags "project= udapeople" \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides id="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --profile udapeople-admin
+              --profile default
               
       - run:
           name: ensure front-end infrastructure exist

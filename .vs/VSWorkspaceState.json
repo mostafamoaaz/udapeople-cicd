@@ -1,18 +1,18 @@
 {
   "ExpandedNodes": [
     "",
+    "\\.circleci",
+    "\\.circleci\\files",
     "\\backend",
-    "\\backend\\src",
     "\\backend\\src\\modules",
     "\\backend\\src\\modules\\domain",
     "\\backend\\src\\modules\\domain\\employees",
     "\\backend\\src\\modules\\domain\\employees\\commands",
     "\\backend\\src\\modules\\domain\\employees\\commands\\handlers",
-    "\\frontend\\src",
-    "\\frontend\\src\\app",
+    "\\frontend",
     "\\frontend\\src\\app\\components",
     "\\frontend\\src\\app\\components\\LoadingMessage"
   ],
-  "SelectedNode": "\\backend\\src\\modules\\domain\\employees\\commands\\handlers\\employee-activator.handler.spec.ts",
+  "SelectedNode": "\\backend\\package.json",
   "PreviewInSolutionExplorer": false
 }

@@ -139,15 +139,18 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      
       - run:
-          name: ensure back-end infrastructure exists
+          name: Install dependencies
+          command: |
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
             aws configure set varname value --profile udapeople-admin
             aws configure set aws_access_key_id default_access_key
             aws configure set aws_secret_access_key default_secret_key
+      - run:
+          name: ensure back-end infrastructure exists
+          command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags "project= udapeople" \

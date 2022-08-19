@@ -398,6 +398,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - install_awscli
       - run:
           name: Get old stack workflow id
           command: |
@@ -414,9 +415,9 @@ jobs:
           command: |
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive --profile udapeople-admin
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}" --profile udapeople-admin
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}" --profile udapeople-admin
             fi
             
 

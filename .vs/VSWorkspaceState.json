@@ -2,17 +2,14 @@
   "ExpandedNodes": [
     "",
     "\\.circleci",
+    "\\.circleci\\ansible\\roles",
+    "\\.circleci\\ansible\\roles\\configure-prometheus-node-exporter\\tasks",
+    "\\.circleci\\ansible\\roles\\configure-server",
+    "\\.circleci\\ansible\\roles\\deploy",
     "\\.circleci\\files",
     "\\backend",
-    "\\backend\\src\\modules",
-    "\\backend\\src\\modules\\domain",
-    "\\backend\\src\\modules\\domain\\employees",
-    "\\backend\\src\\modules\\domain\\employees\\commands",
-    "\\backend\\src\\modules\\domain\\employees\\commands\\handlers",
-    "\\frontend",
-    "\\frontend\\src\\app\\components",
-    "\\frontend\\src\\app\\components\\LoadingMessage"
+    "\\backend\\src"
   ],
-  "SelectedNode": "\\backend\\package.json",
+  "SelectedNode": "\\.circleci\\files\\frontend.yml",
   "PreviewInSolutionExplorer": false
 }

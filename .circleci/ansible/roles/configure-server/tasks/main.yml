@@ -2,9 +2,13 @@
 - name: "install node.js from node scource"
   become: true
   shell: |
-    curl -sl https://deb.nodesource.com/setup_13.x | sudo -E bash -
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt install -y nodejs
 
-- name: "install node.js 13 using apt"
+    sudo npm install -g n
+    sudo n 13.8.0
+
+- name: "install node.js lts using apt"
   become: true
   apt:
     name: ["nodejs"]

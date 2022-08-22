@@ -2,14 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\.circleci",
-    "\\.circleci\\ansible\\roles",
-    "\\.circleci\\ansible\\roles\\configure-prometheus-node-exporter\\tasks",
-    "\\.circleci\\ansible\\roles\\configure-server",
-    "\\.circleci\\ansible\\roles\\deploy",
+    "\\.circleci\\ansible",
     "\\.circleci\\files",
     "\\backend",
     "\\backend\\src"
   ],
-  "SelectedNode": "\\.circleci\\files\\frontend.yml",
+  "SelectedNode": "\\.circleci\\ansible\\deploy-backend.yml",
   "PreviewInSolutionExplorer": false
 }

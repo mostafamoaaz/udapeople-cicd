@@ -4,15 +4,15 @@ https://github.com/mostafamoaaz/udapeople-cicd/tree/master
 
 [URL02] public bucket url
 
-http://udapeople-522033b.s3-website-us-east-1.amazonaws.com
+https://udapeople-49c415b.s3.amazonaws.com
 
 [URL03] cloudfront distribution domain name
 
-https://d2q6v6dsuok6no.cloudfront.net
+d2q6v6dsuok6no.cloudfront.net
 
 [URL04] The backend endpoint
 
-http://34.200.108.215:3030/api/status
+http://34.230.221.58:3030/api/status
 
 [URL05] Prometheus monitoring server
 
